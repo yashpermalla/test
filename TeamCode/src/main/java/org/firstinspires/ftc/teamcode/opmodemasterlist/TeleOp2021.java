@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.opmodemasterlist;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -18,6 +18,7 @@ public class TeleOp2021 extends LinearOpMode {
     private DcMotorEx backRight;
     private DcMotorEx intake;
     private DcMotorEx slides;
+    private Servo tilt;
 
 
 
@@ -30,12 +31,15 @@ public class TeleOp2021 extends LinearOpMode {
         backRight = hardwareMap.get(DcMotorEx.class, "backRight");
         intake = hardwareMap.get(DcMotorEx.class, "intake");
         slides = hardwareMap.get(DcMotorEx.class, "slides");
+        tilt = hardwareMap.get(Servo.class, "tilt");
 
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
         waitForStart();
         runtime.reset();
+
+        acceptPosition();
 
         while (opModeIsActive()) {
 
@@ -89,8 +93,79 @@ public class TeleOp2021 extends LinearOpMode {
             backLeft.setPower(v3);
             backRight.setPower(v4);
 
+            intake.setPower(-1 * leftTrig1);
+
+
+
+
+            if(dpadU2)
+            {
+                liftPosition();
+                telemetry.addData("current", tilt.getPosition());
+            }
+
+            if(dpadD2)
+            {
+                deliverPosition();
+                telemetry.addData("current", tilt.getPosition());
+            }
+
+            if(dpadR2){
+                acceptPosition();
+                telemetry.addData("current", tilt.getPosition());
+            }
+
+            telemetry.update();
+
+            if (a1)
+            {
+                double temp = tilt.getPosition();
+                tilt.setPosition((temp + .005));
+                telemetry.addData("current", tilt.getPosition());
+            }
+
+            if (b1)
+            {
+                double temp = tilt.getPosition();
+                tilt.setPosition(temp - .005);
+                telemetry.addData("current", tilt.getPosition());
+            }
+
+            telemetry.update();
+
+
+
+
+
+
 
         }
+
+
+    }
+
+    private void acceptPosition() {
+        tilt.setPosition(.95);
+    }
+
+    private void liftPosition() {
+        tilt.setPosition(.89);
+    }
+
+    private void deliverPosition() {
+        tilt.setPosition(.58);
+    }
+
+    private void deliver() {
+        slides.setPower(.05);
+        sleep(200);
+        slides.setPower(0);
+    }
+
+    private void down() {
+        slides.setPower(-.05);
+        sleep(200);
+        slides.setPower(0);
     }
 
 
