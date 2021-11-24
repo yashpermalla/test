@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOp2021")
 public class TeleOp2021 extends LinearOpMode {
 
+    //Declaring Motor Classes
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotorEx frontLeft;
     private DcMotorEx frontRight;
@@ -25,6 +26,7 @@ public class TeleOp2021 extends LinearOpMode {
 
     public void runOpMode() throws InterruptedException {
 
+        //Initializing the Motor Classes
         frontLeft = hardwareMap.get(DcMotorEx.class, "frontLeft");
         frontRight = hardwareMap.get(DcMotorEx.class, "frontRight");
         backLeft = hardwareMap.get(DcMotorEx.class, "backLeft");
@@ -43,7 +45,7 @@ public class TeleOp2021 extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-            //all the buttons
+            //initialise all the buttons
             boolean dpadU1 = gamepad1.dpad_up;
             boolean dpadD1 = gamepad1.dpad_down;
             boolean dpadL1 = gamepad1.dpad_left;
