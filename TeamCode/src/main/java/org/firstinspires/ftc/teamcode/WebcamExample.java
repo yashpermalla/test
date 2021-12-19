@@ -38,6 +38,7 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 import org.openftc.easyopencv.OpenCvWebcam;
+import org.openftc.easyopencv.PipelineRecordingParameters;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +47,7 @@ import java.util.List;
 public class WebcamExample extends LinearOpMode
 {
     OpenCvWebcam webcam;
+    SamplePipeline pipeline;
 
     @Override
     public void runOpMode()
@@ -62,6 +64,13 @@ public class WebcamExample extends LinearOpMode
          */
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+        pipeline = new SamplePipeline();
+        webcam.setPipeline(pipeline);
+
+        // Use the SkystoneDetector pipeline
+        // processFrame() will be called to process the frame
+        // Remember to change the camera rotation
+
 
         // OR...  Do Not Activate the Camera Monitor View
         //webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"));
@@ -71,7 +80,7 @@ public class WebcamExample extends LinearOpMode
          * of a frame from the camera. Note that switching pipelines on-the-fly
          * (while a streaming session is in flight) *IS* supported.
          */
-        webcam.setPipeline(new SamplePipeline());
+
 
         /*
          * Open the connection to the camera device. New in v1.4.0 is the ability
@@ -82,8 +91,9 @@ public class WebcamExample extends LinearOpMode
          *
          * If you really want to open synchronously, the old method is still available.
          */
-        webcam.setMillisecondsPermissionTimeout(2500); // Timeout for obtaining permission is configurable. Set before opening.
+        webcam.setMillisecondsPermissionTimeout(1000); // Timeout for obtaining permission is configurable. Set before opening.
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+
         {
             @Override
             public void onOpened()
@@ -105,6 +115,7 @@ public class WebcamExample extends LinearOpMode
                  * away from the user.
                  */
                 webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+
             }
 
             @Override
@@ -129,6 +140,10 @@ public class WebcamExample extends LinearOpMode
             /*
              * Send some stats to the telemetry
              */
+            telemetry.update();
+
+            // Don't burn CPU cycles busy-looping in this sample
+            sleep(50);
             telemetry.addData("Frame Count", webcam.getFrameCount());
             telemetry.addData("FPS", String.format("%.2f", webcam.getFps()));
             telemetry.addData("Total frame time ms", webcam.getTotalFrameTimeMs());
@@ -204,6 +219,10 @@ public class WebcamExample extends LinearOpMode
          * by forgetting to call mat.release(), and it also reduces memory pressure by not
          * constantly allocating and freeing large chunks of memory.
          */
+        Mat mat = new Mat();
+        Mat thresh = new Mat();
+        Mat edges = new Mat();
+        Mat hierarchy = new Mat();
 
         @Override
         public Mat processFrame(Mat input)
@@ -218,7 +237,6 @@ public class WebcamExample extends LinearOpMode
              */
 
             // Make a working copy of the input matrix in HSV
-            Mat mat = new Mat();
             Imgproc.cvtColor(input, mat, Imgproc.COLOR_RGB2HSV);
             if (mat.empty()) {
                 //TODO Get rid of line below in prod build
@@ -230,7 +248,6 @@ public class WebcamExample extends LinearOpMode
 
             Scalar lowHSV = new Scalar(new double[]{0,128,0});  // lower bound HSV for RED
             Scalar highHSV = new Scalar(new double[]{180,225,191}); // higher bound HSV for RED
-            Mat thresh = new Mat();
 
             // We'll get a black and white image. The white regions represent the regular stones.
             // inRange(): thresh[i][j] = {255,255,255} if mat[i][i] is within the range
@@ -238,10 +255,8 @@ public class WebcamExample extends LinearOpMode
 
             //Detects Edeges
             //TODO Fine Tuning
-            Mat edges = new Mat();
             Imgproc.Canny(thresh, edges, 100, 300);
             List<MatOfPoint> contours = new ArrayList<>();
-            Mat hierarchy = new Mat();
             Imgproc.findContours(edges, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 
             //TODO MAKE THIS WORK!
@@ -253,7 +268,21 @@ public class WebcamExample extends LinearOpMode
                 boundRect[i] = Imgproc.boundingRect(new MatOfPoint(contoursPoly[i].toArray()));
             }
 
+            double width = 250;
+            double left_x = 0.25 * width;
+            double right_x = 0.75 * width;
+            boolean left = false; // true if regular stone found on the left side
+            boolean right = false; // "" "" on the right side
+            for (int i = 0; i != boundRect.length; i++) {
+                if (boundRect[i].x < left_x)
+                    left = true;
+                if (boundRect[i].x + boundRect[i].width > right_x)
+                    right = true;
 
+                // draw red bounding rectangles on mat
+                // the mat has been converted to HSV so we need to use HSV as well
+                Imgproc.rectangle(mat, boundRect[i], new Scalar(0.5, 76.9, 89.8));
+            }
 
             /**
              * NOTE: to see how to get data from your pipeline to your OpMode as well as how
@@ -261,8 +290,9 @@ public class WebcamExample extends LinearOpMode
              * tapped, please see {@link PipelineStageSwitchingExample}
              */
 
-            return input;
+            return mat;
         }
+
 
         @Override
         public void onViewportTapped()
@@ -279,6 +309,7 @@ public class WebcamExample extends LinearOpMode
              * Here we demonstrate dynamically pausing/resuming the viewport when the user taps it
              */
 
+
             viewportPaused = !viewportPaused;
 
             if(viewportPaused)
@@ -287,6 +318,7 @@ public class WebcamExample extends LinearOpMode
             }
             else
             {
+
                 webcam.resumeViewport();
             }
         }
