@@ -25,8 +25,12 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -34,6 +38,9 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 import org.openftc.easyopencv.OpenCvWebcam;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @TeleOp
 public class WebcamExample extends LinearOpMode
@@ -187,6 +194,7 @@ public class WebcamExample extends LinearOpMode
     class SamplePipeline extends OpenCvPipeline
     {
         boolean viewportPaused;
+        int position = -1;
 
         /*
          * NOTE: if you wish to use additional Mat objects in your processing pipeline, it is
@@ -200,6 +208,7 @@ public class WebcamExample extends LinearOpMode
         @Override
         public Mat processFrame(Mat input)
         {
+
             /*
              * IMPORTANT NOTE: the input Mat that is passed in as a parameter to this method
              * will only dereference to the same image for the duration of this particular
@@ -208,18 +217,43 @@ public class WebcamExample extends LinearOpMode
              * it to another Mat.
              */
 
-            /*
-             * Draw a simple box around the middle 1/2 of the entire frame
-             */
-            Imgproc.rectangle(
-                    input,
-                    new Point(
-                            input.cols()/4,
-                            input.rows()/4),
-                    new Point(
-                            input.cols()*(3f/4f),
-                            input.rows()*(3f/4f)),
-                    new Scalar(0, 255, 0), 4);
+            // Make a working copy of the input matrix in HSV
+            Mat mat = new Mat();
+            Imgproc.cvtColor(input, mat, Imgproc.COLOR_RGB2HSV);
+            if (mat.empty()) {
+                //TODO Get rid of line below in prod build
+                System.out.println("Mat is Empty");
+                position = 0;
+                return input;
+            }
+
+
+            Scalar lowHSV = new Scalar(new double[]{0,128,0});  // lower bound HSV for RED
+            Scalar highHSV = new Scalar(new double[]{180,225,191}); // higher bound HSV for RED
+            Mat thresh = new Mat();
+
+            // We'll get a black and white image. The white regions represent the regular stones.
+            // inRange(): thresh[i][j] = {255,255,255} if mat[i][i] is within the range
+            Core.inRange(mat, lowHSV, highHSV, thresh);
+
+            //Detects Edeges
+            //TODO Fine Tuning
+            Mat edges = new Mat();
+            Imgproc.Canny(thresh, edges, 100, 300);
+            List<MatOfPoint> contours = new ArrayList<>();
+            Mat hierarchy = new Mat();
+            Imgproc.findContours(edges, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+
+            //TODO MAKE THIS WORK!
+            MatOfPoint2f[] contoursPoly  = new MatOfPoint2f[contours.size()];
+            Rect[] boundRect = new Rect[contours.size()];
+            for (int i = 0; i < contours.size(); i++) {
+                contoursPoly[i] = new MatOfPoint2f();
+                Imgproc.approxPolyDP(new MatOfPoint2f(contours.get(i).toArray()), contoursPoly[i], 3, true);
+                boundRect[i] = Imgproc.boundingRect(new MatOfPoint(contoursPoly[i].toArray()));
+            }
+
+
 
             /**
              * NOTE: to see how to get data from your pipeline to your OpMode as well as how
