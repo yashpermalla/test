@@ -12,7 +12,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class TeleOp2021 extends LinearOpMode {
 
     //Declaring Motor Classes
-    private ElapsedTime runtime = new ElapsedTime();
     private DcMotorEx frontLeft;
     private DcMotorEx frontRight;
     private DcMotorEx backLeft;
@@ -38,10 +37,12 @@ public class TeleOp2021 extends LinearOpMode {
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        waitForStart();
-        runtime.reset();
-
         acceptPosition();
+
+        waitForStart();
+
+
+
 
         while (opModeIsActive()) {
 
@@ -81,13 +82,13 @@ public class TeleOp2021 extends LinearOpMode {
 
 
             //annoying trig drivetrain stuff
-            double r = Math.hypot(-1 * gamepad1.left_stick_x, gamepad1.left_stick_y);
-            double robotAngle = Math.atan2(gamepad1.left_stick_y, -1 * gamepad1.left_stick_x) - Math.PI / 4;
+            double r = Math.hypot(gamepad1.left_stick_x, gamepad1.left_stick_y);
+            double robotAngle = Math.atan2(gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI / 4;
             double rightX = gamepad1.right_stick_x;
-            final double v1 = r * Math.cos(robotAngle) - rightX;
-            final double v2 = r * Math.sin(robotAngle) + rightX;
-            final double v3 = r * Math.sin(robotAngle) - rightX;
-            final double v4 = r * Math.cos(robotAngle) + rightX;
+            final double v1 = r * Math.cos(robotAngle) + rightX;
+            final double v2 = r * Math.sin(robotAngle) - rightX;
+            final double v3 = r * Math.sin(robotAngle) + rightX;
+            final double v4 = r * Math.cos(robotAngle) - rightX;
 
             //set drivetrain velocities
             frontLeft.setPower(v1);
@@ -98,43 +99,27 @@ public class TeleOp2021 extends LinearOpMode {
             intake.setPower(-1 * leftTrig1);
 
 
+            slides.setPower(rightTrig2);
+
+
 
 
             if(dpadU2)
             {
                 liftPosition();
-                telemetry.addData("current", tilt.getPosition());
+                //telemetry.addData("current", tilt.getPosition());
             }
 
             if(dpadD2)
             {
                 deliverPosition();
-                telemetry.addData("current", tilt.getPosition());
+                //telemetry.addData("current", tilt.getPosition());
             }
 
             if(dpadR2){
                 acceptPosition();
-                telemetry.addData("current", tilt.getPosition());
+                //telemetry.addData("current", tilt.getPosition());
             }
-
-            telemetry.update();
-
-            if (a1)
-            {
-                double temp = tilt.getPosition();
-                tilt.setPosition((temp + .005));
-                telemetry.addData("current", tilt.getPosition());
-            }
-
-            if (b1)
-            {
-                double temp = tilt.getPosition();
-                tilt.setPosition(temp - .005);
-                telemetry.addData("current", tilt.getPosition());
-            }
-
-            telemetry.update();
-
 
 
 
@@ -173,3 +158,24 @@ public class TeleOp2021 extends LinearOpMode {
 
 
 }
+
+//            telemetry.update();
+
+            /*
+            if (a1)
+            {
+                double temp = tilt.getPosition();
+                tilt.setPosition((temp + .005));
+                telemetry.addData("current", tilt.getPosition());
+            }
+
+            if (b1)
+            {
+                double temp = tilt.getPosition();
+                tilt.setPosition(temp - .005);
+                telemetry.addData("current", tilt.getPosition());
+            }
+
+            telemetry.update();
+
+*/
