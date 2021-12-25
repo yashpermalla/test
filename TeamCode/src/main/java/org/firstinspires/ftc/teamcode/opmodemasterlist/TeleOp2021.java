@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmodemasterlist;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -12,7 +13,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class TeleOp2021 extends LinearOpMode {
 
     //Declaring Motor Classes
-    private ElapsedTime runtime = new ElapsedTime();
     private DcMotorEx frontLeft;
     private DcMotorEx frontRight;
     private DcMotorEx backLeft;
@@ -38,10 +38,16 @@ public class TeleOp2021 extends LinearOpMode {
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        waitForStart();
-        runtime.reset();
+        slides.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        slides.setTargetPosition(0);
+        slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         acceptPosition();
+
+        waitForStart();
+
+
+
 
         while (opModeIsActive()) {
 
@@ -81,13 +87,13 @@ public class TeleOp2021 extends LinearOpMode {
 
 
             //annoying trig drivetrain stuff
-            double r = Math.hypot(-1 * gamepad1.left_stick_x, gamepad1.left_stick_y);
-            double robotAngle = Math.atan2(gamepad1.left_stick_y, -1 * gamepad1.left_stick_x) - Math.PI / 4;
-            double rightX = gamepad1.right_stick_x;
-            final double v1 = r * Math.cos(robotAngle) - rightX;
-            final double v2 = r * Math.sin(robotAngle) + rightX;
-            final double v3 = r * Math.sin(robotAngle) - rightX;
-            final double v4 = r * Math.cos(robotAngle) + rightX;
+            double r = Math.hypot(-1 * gamepad1.left_stick_x, -1 * gamepad1.left_stick_y);
+            double robotAngle = Math.atan2(-1 * gamepad1.left_stick_y, -1 * gamepad1.left_stick_x) - Math.PI / 4;
+            double rightX = -1 * gamepad1.right_stick_x;
+            final double v1 = r * Math.cos(robotAngle) + .5 * rightX;
+            final double v2 = r * Math.sin(robotAngle) - .5 * rightX;
+            final double v3 = r * Math.sin(robotAngle) + .5 * rightX;
+            final double v4 = r * Math.cos(robotAngle) - .5 * rightX;
 
             //set drivetrain velocities
             frontLeft.setPower(v1);
@@ -100,40 +106,28 @@ public class TeleOp2021 extends LinearOpMode {
 
 
 
-            if(dpadU2)
-            {
-                liftPosition();
-                telemetry.addData("current", tilt.getPosition());
-            }
 
-            if(dpadD2)
-            {
-                deliverPosition();
-                telemetry.addData("current", tilt.getPosition());
-            }
+            if(dpadU2) { topLevel(); }
 
-            if(dpadR2){
-                acceptPosition();
-                telemetry.addData("current", tilt.getPosition());
-            }
+            if(dpadR2) { midLevel(); }
 
+            if(dpadD2) { lowLevel(); }
+
+            if(dpadL2) { ground(); slides.setPower(0);}
+
+            if(rightBump2) {slides.setPower(0); }
+
+
+            if(y2) { acceptPosition(); }
+
+            if(b2) { liftPosition(); }
+
+            if(a2) { deliverPosition(); }
+
+
+            telemetry.addData("current encoder value", slides.getCurrentPosition());
             telemetry.update();
 
-            if (a1)
-            {
-                double temp = tilt.getPosition();
-                tilt.setPosition((temp + .005));
-                telemetry.addData("current", tilt.getPosition());
-            }
-
-            if (b1)
-            {
-                double temp = tilt.getPosition();
-                tilt.setPosition(temp - .005);
-                telemetry.addData("current", tilt.getPosition());
-            }
-
-            telemetry.update();
 
 
 
@@ -158,18 +152,78 @@ public class TeleOp2021 extends LinearOpMode {
         tilt.setPosition(.58);
     }
 
-    private void deliver() {
-        slides.setPower(.05);
-        sleep(200);
-        slides.setPower(0);
+    private void topLevel() {
+
+        slides.setTargetPosition(367);
+        slides.setPower(.2);
+  /*      while (slides.getCurrentPosition() < slides.getTargetPosition())
+        {
+            idle();
+        }
+       */
     }
 
-    private void down() {
-        slides.setPower(-.05);
-        sleep(200);
-        slides.setPower(0);
+    private void midLevel() {
+
+        slides.setTargetPosition(216);
+        slides.setPower(.2);
+     /*   while (opModeIsActive() && slides.isBusy())   //leftMotor.getCurrentPosition() < leftMotor.getTargetPosition())
+        {
+            idle();
+        }
+        */
+
+
     }
+
+    private void lowLevel() {
+
+        slides.setTargetPosition(76);
+        slides.setPower(.2);
+  /*      while (opModeIsActive() && slides.isBusy())   //leftMotor.getCurrentPosition() < leftMotor.getTargetPosition())
+        {
+            idle();
+       }
+   */
+    }
+
+    private void ground() {
+
+        slides.setTargetPosition(0);
+        slides.setPower(.2);
+   /*     while (opModeIsActive() && slides.isBusy())   //leftMotor.getCurrentPosition() < leftMotor.getTargetPosition())
+        {
+            idle();
+        }
+        */
+
+
+    }
+
+
+
 
 
 
 }
+
+//            telemetry.update();
+
+            /*
+            if (a1)
+            {
+                double temp = tilt.getPosition();
+                tilt.setPosition((temp + .005));
+                telemetry.addData("current", tilt.getPosition());
+            }
+
+            if (b1)
+            {
+                double temp = tilt.getPosition();
+                tilt.setPosition(temp - .005);
+                telemetry.addData("current", tilt.getPosition());
+            }
+
+            telemetry.update();
+
+*/
