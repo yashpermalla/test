@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmodemasterlist;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -36,6 +37,10 @@ public class TeleOp2021 extends LinearOpMode {
 
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        slides.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        slides.setTargetPosition(0);
+        slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         acceptPosition();
 
@@ -85,10 +90,10 @@ public class TeleOp2021 extends LinearOpMode {
             double r = Math.hypot(-1 * gamepad1.left_stick_x, -1 * gamepad1.left_stick_y);
             double robotAngle = Math.atan2(-1 * gamepad1.left_stick_y, -1 * gamepad1.left_stick_x) - Math.PI / 4;
             double rightX = -1 * gamepad1.right_stick_x;
-            final double v1 = r * Math.cos(robotAngle) + rightX;
-            final double v2 = r * Math.sin(robotAngle) - rightX;
-            final double v3 = r * Math.sin(robotAngle) + rightX;
-            final double v4 = r * Math.cos(robotAngle) - rightX;
+            final double v1 = r * Math.cos(robotAngle) + .5 * rightX;
+            final double v2 = r * Math.sin(robotAngle) - .5 * rightX;
+            final double v3 = r * Math.sin(robotAngle) + .5 * rightX;
+            final double v4 = r * Math.cos(robotAngle) - .5 * rightX;
 
             //set drivetrain velocities
             frontLeft.setPower(v1);
@@ -99,27 +104,31 @@ public class TeleOp2021 extends LinearOpMode {
             intake.setPower(-1 * leftTrig1);
 
 
-            slides.setPower(rightTrig2);
 
 
 
+            if(dpadU2) { topLevel(); }
 
-            if(dpadU2)
-            {
-                liftPosition();
-                //telemetry.addData("current", tilt.getPosition());
-            }
+            if(dpadR2) { midLevel(); }
 
-            if(dpadD2)
-            {
-                deliverPosition();
-                //telemetry.addData("current", tilt.getPosition());
-            }
+            if(dpadD2) { lowLevel(); }
 
-            if(dpadR2){
-                acceptPosition();
-                //telemetry.addData("current", tilt.getPosition());
-            }
+            if(dpadL2) { ground(); slides.setPower(0);}
+
+            if(rightBump2) {slides.setPower(0); }
+
+
+            if(y2) { acceptPosition(); }
+
+            if(b2) { liftPosition(); }
+
+            if(a2) { deliverPosition(); }
+
+
+            telemetry.addData("current encoder value", slides.getCurrentPosition());
+            telemetry.update();
+
+
 
 
 
@@ -143,17 +152,56 @@ public class TeleOp2021 extends LinearOpMode {
         tilt.setPosition(.58);
     }
 
-    private void deliver() {
-        slides.setPower(.05);
-        sleep(200);
-        slides.setPower(0);
+    private void topLevel() {
+
+        slides.setTargetPosition(367);
+        slides.setPower(.2);
+  /*      while (slides.getCurrentPosition() < slides.getTargetPosition())
+        {
+            idle();
+        }
+       */
     }
 
-    private void down() {
-        slides.setPower(-.05);
-        sleep(200);
-        slides.setPower(0);
+    private void midLevel() {
+
+        slides.setTargetPosition(216);
+        slides.setPower(.2);
+     /*   while (opModeIsActive() && slides.isBusy())   //leftMotor.getCurrentPosition() < leftMotor.getTargetPosition())
+        {
+            idle();
+        }
+        */
+
+
     }
+
+    private void lowLevel() {
+
+        slides.setTargetPosition(76);
+        slides.setPower(.2);
+  /*      while (opModeIsActive() && slides.isBusy())   //leftMotor.getCurrentPosition() < leftMotor.getTargetPosition())
+        {
+            idle();
+       }
+   */
+    }
+
+    private void ground() {
+
+        slides.setTargetPosition(0);
+        slides.setPower(.2);
+   /*     while (opModeIsActive() && slides.isBusy())   //leftMotor.getCurrentPosition() < leftMotor.getTargetPosition())
+        {
+            idle();
+        }
+        */
+
+
+    }
+
+
+
 
 
 
