@@ -12,13 +12,14 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOp2021")
 public class TeleOp2021 extends LinearOpMode {
 
-    //Declaring Motor Classes
+    //Declaring motor classes
     private DcMotorEx frontLeft;
     private DcMotorEx frontRight;
     private DcMotorEx backLeft;
     private DcMotorEx backRight;
     private DcMotorEx intake;
     private DcMotorEx slides;
+    private DcMotorEx carousel;
     private Servo tilt;
 
 
@@ -34,6 +35,7 @@ public class TeleOp2021 extends LinearOpMode {
         intake = hardwareMap.get(DcMotorEx.class, "intake");
         slides = hardwareMap.get(DcMotorEx.class, "slides");
         tilt = hardwareMap.get(Servo.class, "tilt");
+        carousel = hardwareMap.get(DcMotorEx.class, "carousel");
 
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -101,38 +103,116 @@ public class TeleOp2021 extends LinearOpMode {
             backLeft.setPower(v3);
             backRight.setPower(v4);
 
-            intake.setPower(-1 * leftTrig1);
+
+            //intake
+            if(leftTrig1 > rightTrig1)
+                intake.setPower(-1 * leftTrig1);
+            else
+                intake.setPower(rightTrig1);
+
+
+            //carousel
+            if(rightBump1)
+                carousel.setPower(.3);
+            else
+                carousel.setPower(0);
+
+
+            //inching each direction
+            if(dpadU1)
+            {
+                frontLeft.setPower(.2);
+                frontRight.setPower(.2);
+                backLeft.setPower(.2);
+                backRight.setPower(.2);
+                sleep(50);
+                frontLeft.setPower(0);
+                frontRight.setPower(0);
+                backLeft.setPower(0);
+                backRight.setPower(0);
+            }
+
+            if(dpadD1)
+            {
+                frontLeft.setPower(-.2);
+                frontRight.setPower(-.2);
+                backLeft.setPower(-.2);
+                backRight.setPower(-.2);
+                sleep(50);
+                frontLeft.setPower(0);
+                frontRight.setPower(0);
+                backLeft.setPower(0);
+                backRight.setPower(0);
+            }
+
+            if(dpadR1)
+            {
+                frontLeft.setPower(-.2);
+                frontRight.setPower(.2);
+                backLeft.setPower(.2);
+                backRight.setPower(-.2);
+                sleep(50);
+                frontLeft.setPower(0);
+                frontRight.setPower(0);
+                backLeft.setPower(0);
+                backRight.setPower(0);
+            }
+
+            if(dpadL1)
+            {
+                frontLeft.setPower(.2);
+                frontRight.setPower(-.2);
+                backLeft.setPower(-.2);
+                backRight.setPower(.2);
+                sleep(50);
+                frontLeft.setPower(0);
+                frontRight.setPower(0);
+                backLeft.setPower(0);
+                backRight.setPower(0);
+            }
 
 
 
 
 
-            if(dpadU2) { topLevel(); }
+            //slides and servo delivery and return
+            if(dpadU2) {
 
-            if(dpadR2) { midLevel(); }
+                topLevel();
+                while (slides.getCurrentPosition() < slides.getTargetPosition()) {}
+                deliverPosition();
+            }
 
-            if(dpadD2) { lowLevel(); }
+            if(dpadR2) {
 
-            if(dpadL2) { ground(); slides.setPower(0);}
+                midLevel();
+                while (slides.getCurrentPosition() < slides.getTargetPosition()) {}
+                deliverPosition();
+            }
 
-            if(rightBump2) {slides.setPower(0); }
+            if(dpadD2) {
+
+                lowLevel();
+                while (slides.getCurrentPosition() < slides.getTargetPosition()) {}
+                deliverPosition();
+
+            }
+
+            if(dpadL2) {
+
+                acceptPosition();
+                sleep(100);
+                ground();
+
+            }
 
 
+            //emergency stop
+            if(rightBump2) { slides.setPower(0); }
+
+            //emergency servo adjustment
             if(y2) { acceptPosition(); }
-
-            if(b2) { liftPosition(); }
-
             if(a2) { deliverPosition(); }
-
-
-            telemetry.addData("current encoder value", slides.getCurrentPosition());
-            telemetry.update();
-
-
-
-
-
-
 
 
         }
@@ -140,90 +220,45 @@ public class TeleOp2021 extends LinearOpMode {
 
     }
 
+    //servo methods
     private void acceptPosition() {
         tilt.setPosition(.95);
-    }
-
-    private void liftPosition() {
-        tilt.setPosition(.89);
     }
 
     private void deliverPosition() {
         tilt.setPosition(.58);
     }
 
+
+    //slide methods
     private void topLevel() {
 
         slides.setTargetPosition(367);
-        slides.setPower(.2);
-  /*      while (slides.getCurrentPosition() < slides.getTargetPosition())
-        {
-            idle();
-        }
-       */
+        slides.setPower(.5);
+
     }
 
     private void midLevel() {
 
         slides.setTargetPosition(216);
-        slides.setPower(.2);
-     /*   while (opModeIsActive() && slides.isBusy())   //leftMotor.getCurrentPosition() < leftMotor.getTargetPosition())
-        {
-            idle();
-        }
-        */
-
+        slides.setPower(.5);
 
     }
 
     private void lowLevel() {
 
         slides.setTargetPosition(76);
-        slides.setPower(.2);
-  /*      while (opModeIsActive() && slides.isBusy())   //leftMotor.getCurrentPosition() < leftMotor.getTargetPosition())
-        {
-            idle();
-       }
-   */
+        slides.setPower(.5);
+
     }
 
     private void ground() {
 
         slides.setTargetPosition(0);
-        slides.setPower(.2);
-   /*     while (opModeIsActive() && slides.isBusy())   //leftMotor.getCurrentPosition() < leftMotor.getTargetPosition())
-        {
-            idle();
-        }
-        */
-
+        slides.setPower(.5);
 
     }
 
 
-
-
-
-
 }
 
-//            telemetry.update();
-
-            /*
-            if (a1)
-            {
-                double temp = tilt.getPosition();
-                tilt.setPosition((temp + .005));
-                telemetry.addData("current", tilt.getPosition());
-            }
-
-            if (b1)
-            {
-                double temp = tilt.getPosition();
-                tilt.setPosition(temp - .005);
-                telemetry.addData("current", tilt.getPosition());
-            }
-
-            telemetry.update();
-
-*/
