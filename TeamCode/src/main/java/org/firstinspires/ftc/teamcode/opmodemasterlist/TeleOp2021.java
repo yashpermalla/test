@@ -184,24 +184,24 @@ public class TeleOp2021 extends LinearOpMode {
             }
 
             if(dpadR2) {
-
+                tiltPosition();
                 midLevel();
                 while (slides.getCurrentPosition() < slides.getTargetPosition()) {}
                 deliverPosition();
             }
 
             if(dpadD2) {
-
+                tiltPosition();
                 lowLevel();
                 while (slides.getCurrentPosition() < slides.getTargetPosition()) {}
                 deliverPosition();
 
             }
 
-            if(dpadL2) {
+            if(leftBump2) {
 
                 acceptPosition();
-                sleep(100);
+                sleep(300);
                 ground();
 
             }
@@ -213,6 +213,8 @@ public class TeleOp2021 extends LinearOpMode {
             //emergency servo adjustment
             if(y2) { acceptPosition(); }
             if(a2) { deliverPosition(); }
+            //eject
+            if(b2) { tilt.setPosition(.86); }
 
 
         }
@@ -222,40 +224,38 @@ public class TeleOp2021 extends LinearOpMode {
 
     //servo methods
     private void acceptPosition() {
-        tilt.setPosition(.95);
+        tilt.setPosition(.92);
     }
-
-    private void deliverPosition() {
-        tilt.setPosition(.58);
-    }
+    private void tiltPosition() { tilt.setPosition(.89);}
+    private void deliverPosition() { tilt.setPosition(.48); }
 
 
     //slide methods
     private void topLevel() {
 
         slides.setTargetPosition(367);
-        slides.setPower(.5);
+        slides.setPower(1);
 
     }
 
     private void midLevel() {
 
-        slides.setTargetPosition(216);
-        slides.setPower(.5);
+        slides.setTargetPosition(225);
+        slides.setPower(1);
 
     }
 
     private void lowLevel() {
 
         slides.setTargetPosition(76);
-        slides.setPower(.5);
+        slides.setPower(1);
 
     }
 
     private void ground() {
 
         slides.setTargetPosition(0);
-        slides.setPower(.5);
+        slides.setPower(1);
 
     }
 
