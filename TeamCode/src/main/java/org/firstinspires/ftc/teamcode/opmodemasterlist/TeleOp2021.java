@@ -21,6 +21,7 @@ public class TeleOp2021 extends LinearOpMode {
     private DcMotorEx slides;
     private DcMotorEx carousel;
     private Servo tilt;
+    private Servo arm;
 
 
 
@@ -36,17 +37,19 @@ public class TeleOp2021 extends LinearOpMode {
         slides = hardwareMap.get(DcMotorEx.class, "slides");
         tilt = hardwareMap.get(Servo.class, "tilt");
         carousel = hardwareMap.get(DcMotorEx.class, "carousel");
+        arm = hardwareMap.get(Servo.class, "arm");
 
-        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
         slides.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         slides.setTargetPosition(0);
-        slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        slides.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
 
         acceptPosition();
 
         waitForStart();
+
 
 
 
@@ -89,19 +92,20 @@ public class TeleOp2021 extends LinearOpMode {
 
 
             //annoying trig drivetrain stuff
-            double r = Math.hypot(-1 * gamepad1.left_stick_x, -1 * gamepad1.left_stick_y);
-            double robotAngle = Math.atan2(-1 * gamepad1.left_stick_y, -1 * gamepad1.left_stick_x) - Math.PI / 4;
-            double rightX = -1 * gamepad1.right_stick_x;
-            final double v1 = r * Math.cos(robotAngle) + .5 * rightX;
-            final double v2 = r * Math.sin(robotAngle) - .5 * rightX;
-            final double v3 = r * Math.sin(robotAngle) + .5 * rightX;
-            final double v4 = r * Math.cos(robotAngle) - .5 * rightX;
+            double r = Math.hypot(gamepad1.left_stick_x, -1 * gamepad1.left_stick_y);
+            double robotAngle = Math.atan2(-1 * gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.PI / 4;
+            double rightX = gamepad1.right_stick_x;
+            final double v1 = r * Math.cos(robotAngle) + rightX;
+            final double v2 = r * Math.sin(robotAngle) - rightX;
+            final double v3 = r * Math.sin(robotAngle) + rightX;
+            final double v4 = r * Math.cos(robotAngle) - rightX;
 
             //set drivetrain velocities
             frontLeft.setPower(v1);
             frontRight.setPower(v2);
             backLeft.setPower(v3);
             backRight.setPower(v4);
+
 
 
             //intake
@@ -112,10 +116,9 @@ public class TeleOp2021 extends LinearOpMode {
 
 
             //carousel
-            if(rightBump1)
+            while(x1)
                 carousel.setPower(.3);
-            else
-                carousel.setPower(0);
+
 
 
             //inching each direction
@@ -147,19 +150,6 @@ public class TeleOp2021 extends LinearOpMode {
 
             if(dpadR1)
             {
-                frontLeft.setPower(-.2);
-                frontRight.setPower(.2);
-                backLeft.setPower(.2);
-                backRight.setPower(-.2);
-                sleep(50);
-                frontLeft.setPower(0);
-                frontRight.setPower(0);
-                backLeft.setPower(0);
-                backRight.setPower(0);
-            }
-
-            if(dpadL1)
-            {
                 frontLeft.setPower(.2);
                 frontRight.setPower(-.2);
                 backLeft.setPower(-.2);
@@ -171,13 +161,50 @@ public class TeleOp2021 extends LinearOpMode {
                 backRight.setPower(0);
             }
 
+            if(dpadL1)
+            {
+                frontLeft.setPower(-.2);
+                frontRight.setPower(.2);
+                backLeft.setPower(.2);
+                backRight.setPower(-.2);
+                sleep(50);
+                frontLeft.setPower(0);
+                frontRight.setPower(0);
+                backLeft.setPower(0);
+                backRight.setPower(0);
+            }
 
+            if(leftBump1)
+            {
+                frontLeft.setPower(-.2);
+                frontRight.setPower(-.2);
+                backLeft.setPower(.2);
+                backRight.setPower(.2);
+                sleep(50);
+                frontLeft.setPower(0);
+                frontRight.setPower(0);
+                backLeft.setPower(0);
+                backRight.setPower(0);
+            }
+
+            if(rightBump1)
+            {
+                frontLeft.setPower(.2);
+                frontRight.setPower(.2);
+                backLeft.setPower(-.2);
+                backRight.setPower(-.2);
+                sleep(50);
+                frontLeft.setPower(0);
+                frontRight.setPower(0);
+                backLeft.setPower(0);
+                backRight.setPower(0);
+            }
 
 
 
             //slides and servo delivery and return
             if(dpadU2) {
-
+                tiltPosition(); //maybe
                 topLevel();
                 while (slides.getCurrentPosition() < slides.getTargetPosition()) {}
                 deliverPosition();
@@ -216,18 +243,31 @@ public class TeleOp2021 extends LinearOpMode {
             //eject
             if(b2) { tilt.setPosition(.86); }
 
+            //arm adjustment
+            while(leftTrig2 > 0) { arm.setPosition(arm.getPosition() + 0.1 * leftTrig2); }
+            while(rightTrig2 > 0) { arm.setPosition(arm.getPosition() - 0.1 * rightTrig2); }
+
+            //test wheels
+            if(a1) frontLeft.setPower(.5);
+            if(b1) frontRight.setPower(.5);
+
 
         }
 
 
     }
 
-    //servo methods
+    //transfer tilt methods
     private void acceptPosition() {
         tilt.setPosition(.92);
     }
     private void tiltPosition() { tilt.setPosition(.89);}
     private void deliverPosition() { tilt.setPosition(.48); }
+
+    //arm methods
+    private void pickUp() { arm.setPosition(.5); }
+    private void deliverCup() { arm.setPosition(.3); }
+    private void restArm() { arm.setPosition(0); }
 
 
     //slide methods
