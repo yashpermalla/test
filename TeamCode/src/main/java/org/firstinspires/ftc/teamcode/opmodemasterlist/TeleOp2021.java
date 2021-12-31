@@ -116,8 +116,9 @@ public class TeleOp2021 extends LinearOpMode {
 
 
             //carousel
-            while(x1)
-                carousel.setPower(.3);
+            if(x1) { carousel.setPower(.3); }
+            if(y1) { carousel.setPower(0); }
+
 
 
 
@@ -177,8 +178,8 @@ public class TeleOp2021 extends LinearOpMode {
             if(leftBump1)
             {
                 frontLeft.setPower(-.2);
-                frontRight.setPower(-.2);
-                backLeft.setPower(.2);
+                frontRight.setPower(.2);
+                backLeft.setPower(-.2);
                 backRight.setPower(.2);
                 sleep(50);
                 frontLeft.setPower(0);
@@ -190,8 +191,8 @@ public class TeleOp2021 extends LinearOpMode {
             if(rightBump1)
             {
                 frontLeft.setPower(.2);
-                frontRight.setPower(.2);
-                backLeft.setPower(-.2);
+                frontRight.setPower(-.2);
+                backLeft.setPower(.2);
                 backRight.setPower(-.2);
                 sleep(50);
                 frontLeft.setPower(0);
@@ -204,25 +205,48 @@ public class TeleOp2021 extends LinearOpMode {
 
             //slides and servo delivery and return
             if(dpadU2) {
+                frontLeft.setPower(0);
+                frontRight.setPower(0);
+                backLeft.setPower(0);
+                backRight.setPower(0);
                 tiltPosition(); //maybe
                 topLevel();
                 while (slides.getCurrentPosition() < slides.getTargetPosition()) {}
                 deliverPosition();
+                frontLeft.setPower(v1);
+                frontRight.setPower(v2);
+                backLeft.setPower(v3);
+                backRight.setPower(v4);
             }
 
             if(dpadR2) {
+                frontLeft.setPower(0);
+                frontRight.setPower(0);
+                backLeft.setPower(0);
+                backRight.setPower(0);
                 tiltPosition();
                 midLevel();
                 while (slides.getCurrentPosition() < slides.getTargetPosition()) {}
                 deliverPosition();
+                frontLeft.setPower(v1);
+                frontRight.setPower(v2);
+                backLeft.setPower(v3);
+                backRight.setPower(v4);
             }
 
             if(dpadD2) {
+                frontLeft.setPower(0);
+                frontRight.setPower(0);
+                backLeft.setPower(0);
+                backRight.setPower(0);
                 tiltPosition();
                 lowLevel();
                 while (slides.getCurrentPosition() < slides.getTargetPosition()) {}
                 deliverPosition();
-
+                frontLeft.setPower(v1);
+                frontRight.setPower(v2);
+                backLeft.setPower(v3);
+                backRight.setPower(v4);
             }
 
             if(leftBump2) {
@@ -235,21 +259,20 @@ public class TeleOp2021 extends LinearOpMode {
 
 
             //emergency stop
-            if(rightBump2) { slides.setPower(0); }
+            if(dpadL2) { slides.setPower(0); }
 
             //emergency servo adjustment
             if(y2) { acceptPosition(); }
             if(a2) { deliverPosition(); }
+
             //eject
             if(b2) { tilt.setPosition(.86); }
 
             //arm adjustment
-            while(leftTrig2 > 0) { arm.setPosition(arm.getPosition() + 0.1 * leftTrig2); }
-            while(rightTrig2 > 0) { arm.setPosition(arm.getPosition() - 0.1 * rightTrig2); }
+            //while(leftTrig2 > 0) { arm.setPosition(arm.getPosition() + 0.1 * leftTrig2); }
+            //while(rightTrig2 > 0) { arm.setPosition(arm.getPosition() - 0.1 * rightTrig2); }
 
-            //test wheels
-            if(a1) frontLeft.setPower(.5);
-            if(b1) frontRight.setPower(.5);
+
 
 
         }
