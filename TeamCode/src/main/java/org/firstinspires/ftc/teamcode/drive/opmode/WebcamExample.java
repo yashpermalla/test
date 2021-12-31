@@ -1,4 +1,4 @@
-/*
+package org.firstinspires.ftc.teamcode.drive.opmode;/*
  * Copyright (c) 2019 OpenFTC Team
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,7 +19,6 @@
  * SOFTWARE.
  */
 
-package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -237,52 +236,33 @@ public class WebcamExample extends LinearOpMode
              */
 
             // Make a working copy of the input matrix in HSV
+            Scalar lowHSV = new Scalar(new double[]{0,130,0});  // lower bound HSV for RED
+            Scalar highHSV = new Scalar(new double[]{180,225,191}); // higher bound HSV for RED
+
+            //Translates imput to detect the shade of red we want
             Imgproc.cvtColor(input, mat, Imgproc.COLOR_RGB2HSV);
             if (mat.empty()) {
-                //TODO Get rid of line below in prod build
-                System.out.println("Mat is Empty");
                 position = 0;
                 return input;
             }
 
 
-            Scalar lowHSV = new Scalar(new double[]{0,128,0});  // lower bound HSV for RED
-            Scalar highHSV = new Scalar(new double[]{180,225,191}); // higher bound HSV for RED
+
 
             // We'll get a black and white image. The white regions represent the regular stones.
             // inRange(): thresh[i][j] = {255,255,255} if mat[i][i] is within the range
             Core.inRange(mat, lowHSV, highHSV, thresh);
 
             //Detects Edeges
-            //TODO Fine Tuning
-            Imgproc.Canny(thresh, edges, 100, 300);
-            List<MatOfPoint> contours = new ArrayList<>();
-            Imgproc.findContours(edges, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-
-            //TODO MAKE THIS WORK!
-            MatOfPoint2f[] contoursPoly  = new MatOfPoint2f[contours.size()];
-            Rect[] boundRect = new Rect[contours.size()];
-            for (int i = 0; i < contours.size(); i++) {
-                contoursPoly[i] = new MatOfPoint2f();
-                Imgproc.approxPolyDP(new MatOfPoint2f(contours.get(i).toArray()), contoursPoly[i], 3, true);
-                boundRect[i] = Imgproc.boundingRect(new MatOfPoint(contoursPoly[i].toArray()));
-            }
+            Imgproc.Canny(thresh, edges, 60, 60*2);
+//            List<MatOfPoint> contours = new ArrayList<>();
+//            Imgproc.findContours(edges, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 
             double width = 250;
             double left_x = 0.25 * width;
             double right_x = 0.75 * width;
             boolean left = false; // true if regular stone found on the left side
             boolean right = false; // "" "" on the right side
-            for (int i = 0; i != boundRect.length; i++) {
-                if (boundRect[i].x < left_x)
-                    left = true;
-                if (boundRect[i].x + boundRect[i].width > right_x)
-                    right = true;
-
-                // draw red bounding rectangles on mat
-                // the mat has been converted to HSV so we need to use HSV as well
-                Imgproc.rectangle(mat, boundRect[i], new Scalar(0.5, 76.9, 89.8));
-            }
 
             /**
              * NOTE: to see how to get data from your pipeline to your OpMode as well as how
@@ -290,7 +270,7 @@ public class WebcamExample extends LinearOpMode
              * tapped, please see {@link PipelineStageSwitchingExample}
              */
 
-            return mat;
+            return edges;
         }
 
 
