@@ -218,10 +218,15 @@ public class WebcamExample extends LinearOpMode
          * by forgetting to call mat.release(), and it also reduces memory pressure by not
          * constantly allocating and freeing large chunks of memory.
          */
+
+        //Base Mat which stores RGB pixel values
         Mat mat = new Mat();
+
+        //Mat that store black and white img with red being white
         Mat thresh = new Mat();
+
+        //Mat with edges being detected
         Mat edges = new Mat();
-        Mat hierarchy = new Mat();
 
         @Override
         public Mat processFrame(Mat input)
