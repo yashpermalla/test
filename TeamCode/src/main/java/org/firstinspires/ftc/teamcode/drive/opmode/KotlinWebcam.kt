@@ -1,57 +1,43 @@
-package org.firstinspires.ftc.teamcode.drive.opmode;/*
- * Copyright (c) 2019 OpenFTC Team
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+package org.firstinspires.ftc.teamcode.drive.opmode
 
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
+import org.firstinspires.ftc.teamcode.drive.opmode.WebcamExample.SamplePipeline
+import org.opencv.core.Core
+import org.opencv.core.Mat
+import org.opencv.core.Scalar
+import org.opencv.imgproc.Imgproc
+import org.openftc.easyopencv.OpenCvCamera.AsyncCameraOpenListener
+import org.openftc.easyopencv.OpenCvCameraFactory
+import org.openftc.easyopencv.OpenCvCameraRotation
+import org.openftc.easyopencv.OpenCvPipeline
+import org.openftc.easyopencv.OpenCvWebcam
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
-import org.opencv.core.MatOfPoint2f;
-import org.opencv.core.Point;
-import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
-import org.opencv.core.Size;
-import org.opencv.imgproc.Imgproc;
-import org.openftc.easyopencv.OpenCvCamera;
-import org.openftc.easyopencv.OpenCvCameraFactory;
-import org.openftc.easyopencv.OpenCvCameraRotation;
-import org.openftc.easyopencv.OpenCvPipeline;
-import org.openftc.easyopencv.OpenCvWebcam;
-import org.openftc.easyopencv.PipelineRecordingParameters;
-
-import java.util.ArrayList;
-import java.util.List;
-
-@TeleOp
-public class WebcamExample extends LinearOpMode
-{
-    OpenCvWebcam webcam;
-    SamplePipeline pipeline;
-
-    @Override
-    public void runOpMode()
-    {
+/*
+* Copyright (c) 2019 OpenFTC Team
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in all
+* copies or substantial portions of the Software.
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+* SOFTWARE.
+*/@TeleOp
+class WebcamExample : LinearOpMode() {
+    var webcam: OpenCvWebcam? = null
+    internal var pipeline: SamplePipeline? = null
+    override fun runOpMode() {
         /*
          * Instantiate an OpenCvCamera object for the camera we'll be using.
          * In this sample, we're using a webcam. Note that you will need to
@@ -62,10 +48,10 @@ public class WebcamExample extends LinearOpMode
          * the RC phone). If no camera monitor is desired, use the alternate
          * single-parameter constructor instead (commented out below)
          */
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        pipeline = new SamplePipeline();
-        webcam.setPipeline(pipeline);
+        val cameraMonitorViewId = hardwareMap.appContext.resources.getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.packageName)
+        val webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName::class.java, "Webcam 1"), cameraMonitorViewId)
+        val  pipeline:OpenCvPipeline = SamplePipeline()
+        webcam.setPipeline(pipeline)
 
         // Use the SkystoneDetector pipeline
         // processFrame() will be called to process the frame
@@ -90,14 +76,9 @@ public class WebcamExample extends LinearOpMode
          * of tripping the stuck watchdog)
          *
          * If you really want to open synchronously, the old method is still available.
-         */
-        webcam.setMillisecondsPermissionTimeout(1000); // Timeout for obtaining permission is configurable. Set before opening.
-        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
-
-        {
-            @Override
-            public void onOpened()
-            {
+         */webcam.setMillisecondsPermissionTimeout(1000) // Timeout for obtaining permission is configurable. Set before opening.
+        webcam.openCameraDeviceAsync(object : AsyncCameraOpenListener {
+            override fun onOpened() {
                 /*
                  * Tell the webcam to start streaming images to us! Note that you must make sure
                  * the resolution you specify is supported by the camera. If it is not, an exception
@@ -114,51 +95,42 @@ public class WebcamExample extends LinearOpMode
                  * For a rear facing camera or a webcam, rotation is defined assuming the camera is facing
                  * away from the user.
                  */
-                webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
-
+                webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT)
             }
 
-            @Override
-            public void onError(int errorCode)
-            {
+            override fun onError(errorCode: Int) {
                 /*
                  * This will be called if the camera could not be opened
                  */
             }
-        });
-
-        telemetry.addLine("Waiting for start");
-        telemetry.update();
+        })
+        telemetry.addLine("Waiting for start")
+        telemetry.update()
 
         /*
          * Wait for the user to press start on the Driver Station
-         */
-        waitForStart();
-
-        while (opModeIsActive())
-        {
+         */waitForStart()
+        while (opModeIsActive()) {
             /*
              * Send some stats to the telemetry
              */
-            telemetry.update();
+            telemetry.update()
 
             // Don't burn CPU cycles busy-looping in this sample
-            sleep(50);
-            telemetry.addData("Frame Count", webcam.getFrameCount());
-            telemetry.addData("FPS", String.format("%.2f", webcam.getFps()));
-            telemetry.addData("Total frame time ms", webcam.getTotalFrameTimeMs());
-            telemetry.addData("Pipeline time ms", webcam.getPipelineTimeMs());
-            telemetry.addData("Overhead time ms", webcam.getOverheadTimeMs());
-            telemetry.addData("Theoretical max FPS", webcam.getCurrentPipelineMaxFps());
-            telemetry.update();
+            sleep(50)
+            telemetry.addData("Frame Count", webcam.getFrameCount())
+            telemetry.addData("FPS", String.format("%.2f", webcam.getFps()))
+            telemetry.addData("Total frame time ms", webcam.getTotalFrameTimeMs())
+            telemetry.addData("Pipeline time ms", webcam.getPipelineTimeMs())
+            telemetry.addData("Overhead time ms", webcam.getOverheadTimeMs())
+            telemetry.addData("Theoretical max FPS", webcam.getCurrentPipelineMaxFps())
+            telemetry.update()
 
             /*
              * NOTE: stopping the stream from the camera early (before the end of the OpMode
              * when it will be automatically stopped for you) *IS* supported. The "if" statement
              * below will stop streaming from the camera when the "A" button on gamepad 1 is pressed.
-             */
-            if(gamepad1.a)
-            {
+             */if (gamepad1.a) {
                 /*
                  * IMPORTANT NOTE: calling stopStreaming() will indeed stop the stream of images
                  * from the camera (and, by extension, stop calling your vision pipeline). HOWEVER,
@@ -178,7 +150,7 @@ public class WebcamExample extends LinearOpMode
                  * time. Of course, this comment is irrelevant in light of the use case described in
                  * the above "important note".
                  */
-                webcam.stopStreaming();
+                webcam.stopStreaming()
                 //webcam.closeCameraDevice();
             }
 
@@ -186,10 +158,10 @@ public class WebcamExample extends LinearOpMode
              * For the purposes of this sample, throttle ourselves to 10Hz loop to avoid burning
              * excess CPU cycles for no reason. (By default, telemetry is only sent to the DS at 4Hz
              * anyway). Of course in a real OpMode you will likely not want to do this.
-             */
-            sleep(100);
+             */sleep(100)
         }
     }
+
     /*
      * An example image processing pipeline to be run upon receipt of each frame from the camera.
      * Note that the processFrame() method is called serially from the frame worker thread -
@@ -205,10 +177,9 @@ public class WebcamExample extends LinearOpMode
      * if you're doing something weird where you do need it synchronized with your OpMode thread,
      * then you will need to account for that accordingly.
      */
-    class SamplePipeline extends OpenCvPipeline
-    {
-        boolean viewportPaused;
-        int position = -1;
+    internal inner class SamplePipeline : OpenCvPipeline() {
+        var viewportPaused = false
+        var position = -1
 
         /*
          * NOTE: if you wish to use additional Mat objects in your processing pipeline, it is
@@ -218,19 +189,15 @@ public class WebcamExample extends LinearOpMode
          * by forgetting to call mat.release(), and it also reduces memory pressure by not
          * constantly allocating and freeing large chunks of memory.
          */
-
         //Base Mat which stores RGB pixel values
-        Mat mat = new Mat();
+        var mat = Mat()
 
         //Mat that store black and white img with red being white
-        Mat thresh = new Mat();
+        var thresh = Mat()
 
         //Mat with edges being detected
-        Mat edges = new Mat();
-
-        @Override
-        public Mat processFrame(Mat input)
-        {
+        var edges = Mat()
+        override fun processFrame(input: Mat): Mat {
 
             /*
              * IMPORTANT NOTE: the input Mat that is passed in as a parameter to this method
@@ -241,52 +208,43 @@ public class WebcamExample extends LinearOpMode
              */
 
             // Make a working copy of the input matrix in HSV
-            Scalar lowHSV = new Scalar(new double[]{0,130,0});  // lower bound HSV for RED
-            Scalar highHSV = new Scalar(new double[]{180,225,191}); // higher bound HSV for RED
+            val lowHSV = Scalar(doubleArrayOf(0.0, 130.0, 0.0)) // lower bound HSV for RED
+            val highHSV = Scalar(doubleArrayOf(180.0, 225.0, 191.0)) // higher bound HSV for RED
 
             //Translates imput to detect the shade of red we want
-            Imgproc.cvtColor(input, mat, Imgproc.COLOR_RGB2HSV);
+            Imgproc.cvtColor(input, mat, Imgproc.COLOR_RGB2HSV)
             if (mat.empty()) {
-                position = 0;
-                return input;
+                position = 0
+                return input
             }
-
-
 
 
             // We'll get a black and white image. The white regions represent the regular stones.
             // inRange(): thresh[i][j] = {255,255,255} if mat[i][i] is within the range
-            Core.inRange(mat, lowHSV, highHSV, thresh);
+            Core.inRange(mat, lowHSV, highHSV, thresh)
 
             //Detects Edeges
-            Imgproc.Canny(thresh, edges, 60, 60*2);
-//            List<MatOfPoint> contours = new ArrayList<>();
+            Imgproc.Canny(thresh, edges, 60.0, (60 * 2).toDouble())
+            //            List<MatOfPoint> contours = new ArrayList<>();
 //            Imgproc.findContours(edges, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-
-            Size a = edges.size();
-            double[] d = edges.get(10,0);
-            double x = a.width;
-           double w =  a.height;
-
-            double width = 250;
-            double left_x = 0.25 * width;
-            double right_x = 0.75 * width;
-            boolean left = false; // true if regular stone found on the left side
-            boolean right = false; // "" "" on the right side
-
+            val a = edges.size()
+            val d = edges[10, 0]
+            val x = a.width
+            val w = a.height
+            val width = 250.0
+            val left_x = 0.25 * width
+            val right_x = 0.75 * width
+            val left = false // true if regular stone found on the left side
+            val right = false // "" "" on the right side
             /**
              * NOTE: to see how to get data from your pipeline to your OpMode as well as how
              * to change which stage of the pipeline is rendered to the viewport when it is
-             * tapped, please see {@link PipelineStageSwitchingExample}
+             * tapped, please see [PipelineStageSwitchingExample]
              */
-
-            return edges;
+            return edges
         }
 
-
-        @Override
-        public void onViewportTapped()
-        {
+        override fun onViewportTapped() {
             /*
              * The viewport (if one was specified in the constructor) can also be dynamically "paused"
              * and "resumed". The primary use case of this is to reduce CPU, memory, and power load
@@ -298,17 +256,11 @@ public class WebcamExample extends LinearOpMode
              *
              * Here we demonstrate dynamically pausing/resuming the viewport when the user taps it
              */
-
-            viewportPaused = !viewportPaused;
-
-            if(viewportPaused)
-            {
-                webcam.pauseViewport();
-            }
-            else
-            {
-
-                webcam.resumeViewport();
+            viewportPaused = !viewportPaused
+            if (viewportPaused) {
+                webcam!!.pauseViewport()
+            } else {
+                webcam!!.resumeViewport()
             }
         }
     }
