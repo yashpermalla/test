@@ -31,6 +31,7 @@ import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
@@ -40,7 +41,10 @@ import org.openftc.easyopencv.OpenCvWebcam;
 import org.openftc.easyopencv.PipelineRecordingParameters;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import static org.opencv.imgproc.Imgproc.rectangle;
 
 @TeleOp
 public class WebcamExample extends LinearOpMode
@@ -228,9 +232,10 @@ public class WebcamExample extends LinearOpMode
         //Mat with edges being detected
         Mat edges = new Mat();
 
+        Mat rectview = new Mat();
+
         @Override
-        public Mat processFrame(Mat input)
-        {
+        public Mat processFrame(Mat input) {
 
             /*
              * IMPORTANT NOTE: the input Mat that is passed in as a parameter to this method
@@ -252,22 +257,51 @@ public class WebcamExample extends LinearOpMode
             }
 
 
-
-
             // We'll get a black and white image. The white regions represent the regular stones.
             // inRange(): thresh[i][j] = {255,255,255} if mat[i][i] is within the range
             Core.inRange(mat, lowHSV, highHSV, thresh);
 
-            //Detects Edeges
-            Imgproc.Canny(thresh, edges, 60, 60*2);
+            //Detects Edges
+            Imgproc.Canny(thresh, edges, 60, 60 * 2);
 //            List<MatOfPoint> contours = new ArrayList<>();
 //            Imgproc.findContours(edges, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 
-            double width = 250;
-            double left_x = 0.25 * width;
-            double right_x = 0.75 * width;
-            boolean left = false; // true if regular stone found on the left side
-            boolean right = false; // "" "" on the right side
+
+            Size a = edges.size();
+            double rows = a.width;
+            double columns = a.height;
+            telemetry.addData("rows", rows);
+            telemetry.addData("columns", columns);
+            telemetry.update();
+            double[] b = edges.get(10, 0);
+
+            double sumx = 0;
+            double sumy = 0;
+
+            //can definitely make this more efficient once I figure out the row and column counts
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < columns; j++) {
+                    if (Arrays.equals(edges.get(i, j), new double[]{255.0, 255.0, 255.0})) {
+                        sumy += i;
+                        sumx += j;
+                    }
+                }
+            }
+
+            double avgx = sumx / rows;
+            double avgy = sumy / columns;
+
+            int leftthresh = 0, rightthresh = 0; //figure these out when we see the camera feed
+
+            /*
+            if (temp < leftthresh)
+                position = 1;
+            else if (temp < rightthresh)
+                position = 2;
+            else
+                position = 3;
+*/
+            rectangle(edges, new Point(avgx, avgy), new Point(avgx + 20, avgy + 20), new Scalar(225, 0, 225), 1);
 
             /**
              * NOTE: to see how to get data from your pipeline to your OpMode as well as how

@@ -107,24 +107,24 @@ public class TeleOp2021 extends LinearOpMode {
             backRight.setPower(v4);
 
 
-
             //intake
-            if(leftTrig1 > rightTrig1)
+            if (leftTrig1 > rightTrig1)
                 intake.setPower(-1 * leftTrig1);
             else
                 intake.setPower(rightTrig1);
 
 
             //carousel
-            if(x1) { carousel.setPower(.3); }
-            if(y1) { carousel.setPower(0); }
-
-
+            if (x2)
+                carousel.setPower(.35);
+            else if (rightTrig2 > leftTrig2)
+                carousel.setPower(0.25 * rightTrig2);
+            else
+                carousel.setPower(-.25 * leftTrig2);
 
 
             //inching each direction
-            if(dpadU1)
-            {
+            if (dpadU1) {
                 frontLeft.setPower(.2);
                 frontRight.setPower(.2);
                 backLeft.setPower(.2);
