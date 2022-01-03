@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.drive.opmode
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
-import org.firstinspires.ftc.teamcode.drive.opmode.WebcamExample.SamplePipeline
 import org.opencv.core.Core
 import org.opencv.core.Mat
 import org.opencv.core.Scalar
@@ -34,7 +33,7 @@ import org.openftc.easyopencv.OpenCvWebcam
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */@TeleOp
-class WebcamExample : LinearOpMode() {
+class WebcamExampleKotlin: LinearOpMode() {
     var webcam: OpenCvWebcam? = null
     internal var pipeline: SamplePipeline? = null
     override fun runOpMode() {

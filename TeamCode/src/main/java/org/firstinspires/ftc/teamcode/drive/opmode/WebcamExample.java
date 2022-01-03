@@ -280,7 +280,7 @@ public class WebcamExample extends LinearOpMode
              * tapped, please see {@link PipelineStageSwitchingExample}
              */
 
-            return edges;
+            return thresh;
         }
 
 
