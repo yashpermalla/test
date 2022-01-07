@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodemasterlist;/*
+package org.firstinspires.ftc.teamcode.drive.opmode;/*
  * Copyright (c) 2019 OpenFTC Team
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -246,13 +246,12 @@ public class WebcamExample extends LinearOpMode
 
             //Detects Edges
             Imgproc.Canny(thresh, edges, 60, 60 * 2);
-//            List<MatOfPoint> contours = new ArrayList<>();
-//            Imgproc.findContours(edges, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 
             Size a = edges.size();
             double rows = a.height;
             double columns = a.width;
 
+            //Creating 3  rectangles to set boundaries of whether the cup in inside one of these rectangles.
             subedgesone = edges.submat(new Rect(new Point(0,70), new Point(100, 160)));
             subedgestwo = edges.submat(new Rect(new Point(100,70), new Point(220, 160)));
             subedgesthree = edges.submat(new Rect(new Point(220,70), new Point(320, 160)));
@@ -267,43 +266,6 @@ public class WebcamExample extends LinearOpMode
                 position = "MIDDLE";
             else if (avg3 > 2)
                 position = "RIGHT";
-
-
-
-/*
-            double[] b = edges.get(10, 0);
-
-            double sum = 0;
-
-
-            //can definitely make this more efficient once I figure out the row and column counts
-            for (int i = 0; i < rows; i++) {
-                for (int j = 0; j < columns; j++) {
-                    if (Arrays.equals(edges.get(i, j), new double[]{255.0, 255.0, 255.0})) {
-                        sum += j;
-                    }
-                }
-            }
-
-            avg = sum / columns;
-
-
-            int leftthresh = 100, rightthresh = 220; //figure these out when we see the camera feed
-
-
-            if (avg < leftthresh)
-                position = 1;
-            else if (avg < rightthresh)
-                position = 2;
-            else
-                position = 3;
-
-*/
-
-            //rectangle(edges, new Point(0, 70), new Point(320, 160), new Scalar(225, 0, 225), 1);
-            //rectangle(edges, new Point(100, 0), new Point(220, 240), new Scalar(225, 0, 225), 1);
-
-
 
 
             /**
