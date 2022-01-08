@@ -169,7 +169,7 @@ public class TeleOp2021 extends LinearOpMode {
 
             //carousel
             if (x2)
-                carousel.setPower(.35);
+                carousel.setPower(-.4);
             else if (rightTrig2 > leftTrig2)
                 carousel.setPower(0.25 * rightTrig2);
             else
@@ -309,6 +309,7 @@ public class TeleOp2021 extends LinearOpMode {
                 ground();
 
             }
+
 
 
             //emergency stop
