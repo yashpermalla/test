@@ -2,12 +2,16 @@ package org.firstinspires.ftc.teamcode.opmodemasterlist;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import java.util.HashMap;
+import java.util.Map;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOp2021")
 public class TeleOp2021 extends LinearOpMode {
@@ -22,9 +26,56 @@ public class TeleOp2021 extends LinearOpMode {
     private DcMotorEx carousel;
     private Servo tilt;
     private Servo arm;
+    private ColorSensor color;
+    private DigitalChannel redLED;
+    private DigitalChannel greenLED;
 
+    private int[] yellow = {100, 100, 100}; // R G B
+    private int[] white = {100, 100, 100}; // R G B
+    private HashMap<String, int[]> colors = new HashMap() {{
+        put("yellow", yellow);
+        put("white", white);
+    }};
 
+    private int colorCloseness(int[] rgb) {
+        return (
+          Math.abs(color.red() - rgb[0]) +
+          Math.abs(color.green() - rgb[1]) +
+          Math.abs(color.blue() - rgb[2])
+        ) / 3;
+    }
 
+    private String closestColor() {
+        // Outputs the closest color
+        // If none are close enough, it returns "none"
+        int range = 25; // How much the closeness can be for it to choose the color
+        String lowestKey = "none";
+        int lowestCloseness = 2147483647;
+        for (Map.Entry<String, int[]> rgb : colors.entrySet()) {
+            int closeness = colorCloseness(rgb.getValue());
+            if (closeness < range && closeness < lowestCloseness) {
+                lowestKey = rgb.getKey();
+                lowestCloseness = closeness;
+            }
+        }
+        return lowestKey;
+    }
+
+    private void setLED(String color) {
+        if (color == "red") {
+          greenLED.setState(false);
+          redLED.setState(true);
+        } else if (color == "green") {
+            greenLED.setState(true);
+            redLED.setState(false);
+        } else if (color == "amber") {
+            greenLED.setState(true);
+            redLED.setState(true);
+        } else {
+            greenLED.setState(false);
+            redLED.setState(false);
+        }
+    }
 
     public void runOpMode() throws InterruptedException {
 
@@ -38,6 +89,10 @@ public class TeleOp2021 extends LinearOpMode {
         tilt = hardwareMap.get(Servo.class, "tilt");
         carousel = hardwareMap.get(DcMotorEx.class, "carousel");
         arm = hardwareMap.get(Servo.class, "arm");
+        color = hardwareMap.get(ColorSensor.class, "color");
+        redLED = hardwareMap.get(DigitalChannel.class, "red");
+        greenLED = hardwareMap.get(DigitalChannel.class, "green");
+
 
         frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
         backRight.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -50,12 +105,10 @@ public class TeleOp2021 extends LinearOpMode {
 
         waitForStart();
 
-
-
-
+        redLED.setMode(DigitalChannel.Mode.OUTPUT);
+        greenLED.setMode(DigitalChannel.Mode.OUTPUT);
 
         while (opModeIsActive()) {
-
             //initialise all the buttons
             boolean dpadU1 = gamepad1.dpad_up;
             boolean dpadD1 = gamepad1.dpad_down;
@@ -272,9 +325,21 @@ public class TeleOp2021 extends LinearOpMode {
             //while(leftTrig2 > 0) { arm.setPosition(arm.getPosition() + 0.1 * leftTrig2); }
             //while(rightTrig2 > 0) { arm.setPosition(arm.getPosition() - 0.1 * rightTrig2); }
 
+            String currentColor = closestColor();
+            switch (currentColor) {
+                case "yellow":
+                    setLED("red");
+                case "white":
+                    setLED("green");
+                default:
+                    setLED("");
+            }
 
-
-
+            telemetry.addData("Color", currentColor);
+            telemetry.addData("Red", color.red());
+            telemetry.addData("Green", color.green());
+            telemetry.addData("Blue", color.blue());
+            telemetry.update();
         }
 
 
