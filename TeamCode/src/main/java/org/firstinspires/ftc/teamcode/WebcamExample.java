@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive.opmode;/*
+package org.firstinspires.ftc.teamcode;/*
  * Copyright (c) 2019 OpenFTC Team
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,6 +20,7 @@ package org.firstinspires.ftc.teamcode.drive.opmode;/*
  */
 
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -46,7 +47,7 @@ import java.util.List;
 
 import static org.opencv.imgproc.Imgproc.rectangle;
 
-@TeleOp
+@Autonomous
 public class WebcamExample extends LinearOpMode
 {
     OpenCvWebcam webcam;
@@ -143,10 +144,12 @@ public class WebcamExample extends LinearOpMode
             /*
              * Send some stats to the telemetry
              */
+            telemetry.addData("position", pipeline.position);
             telemetry.update();
 
             // Don't burn CPU cycles busy-looping in this sample
             sleep(50);
+            /*
             telemetry.addData("Frame Count", webcam.getFrameCount());
             telemetry.addData("FPS", String.format("%.2f", webcam.getFps()));
             telemetry.addData("Total frame time ms", webcam.getTotalFrameTimeMs());
@@ -154,36 +157,13 @@ public class WebcamExample extends LinearOpMode
             telemetry.addData("Overhead time ms", webcam.getOverheadTimeMs());
             telemetry.addData("Theoretical max FPS", webcam.getCurrentPipelineMaxFps());
             telemetry.update();
-
+*/
             /*
              * NOTE: stopping the stream from the camera early (before the end of the OpMode
              * when it will be automatically stopped for you) *IS* supported. The "if" statement
              * below will stop streaming from the camera when the "A" button on gamepad 1 is pressed.
              */
-            if(gamepad1.a)
-            {
-                /*
-                 * IMPORTANT NOTE: calling stopStreaming() will indeed stop the stream of images
-                 * from the camera (and, by extension, stop calling your vision pipeline). HOWEVER,
-                 * if the reason you wish to stop the stream early is to switch use of the camera
-                 * over to, say, Vuforia or TFOD, you will also need to call closeCameraDevice()
-                 * (commented out below), because according to the Android Camera API documentation:
-                 *         "Your application should only have one Camera object active at a time for
-                 *          a particular hardware camera."
-                 *
-                 * NB: calling closeCameraDevice() will internally call stopStreaming() if applicable,
-                 * but it doesn't hurt to call it anyway, if for no other reason than clarity.
-                 *
-                 * NB2: if you are stopping the camera stream to simply save some processing power
-                 * (or battery power) for a short while when you do not need your vision pipeline,
-                 * it is recommended to NOT call closeCameraDevice() as you will then need to re-open
-                 * it the next time you wish to activate your vision pipeline, which can take a bit of
-                 * time. Of course, this comment is irrelevant in light of the use case described in
-                 * the above "important note".
-                 */
-                webcam.stopStreaming();
-                //webcam.closeCameraDevice();
-            }
+
 
             /*
              * For the purposes of this sample, throttle ourselves to 10Hz loop to avoid burning
@@ -208,10 +188,10 @@ public class WebcamExample extends LinearOpMode
      * if you're doing something weird where you do need it synchronized with your OpMode thread,
      * then you will need to account for that accordingly.
      */
-    class SamplePipeline extends OpenCvPipeline
-    {
+    class SamplePipeline extends OpenCvPipeline {
         boolean viewportPaused;
-        int position = -1;
+        private volatile String position = "";
+        private volatile int avg1 = 0, avg2 = 0, avg3 = 0;
 
         /*
          * NOTE: if you wish to use additional Mat objects in your processing pipeline, it is
@@ -231,7 +211,8 @@ public class WebcamExample extends LinearOpMode
         //Mat with edges being detected
         Mat edges = new Mat();
 
-        Mat rectview = new Mat();
+        Mat subedgesone = new Mat(), subedgestwo = new Mat(), subedgesthree = new Mat();
+
 
         @Override
         public Mat processFrame(Mat input) {
@@ -251,7 +232,7 @@ public class WebcamExample extends LinearOpMode
             //Translates imput to detect the shade of red we want
             Imgproc.cvtColor(input, mat, Imgproc.COLOR_RGB2HSV);
             if (mat.empty()) {
-                position = 0;
+                position = "";
                 return input;
             }
 
@@ -266,50 +247,27 @@ public class WebcamExample extends LinearOpMode
 //            Imgproc.findContours(edges, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 
             Size a = edges.size();
-            double rows = a.width;
-            double columns = a.height;
-            telemetry.addData("rows", rows);
-            telemetry.addData("columns", columns);
-            telemetry.update();
-            double[] b = edges.get(10, 0);
+            double rows = a.height;
+            double columns = a.width;
 
-            double sumx = 0;
-            double sumy = 0;
+            subedgesone = edges.submat(new Rect(new Point(0, 70), new Point(100, 160)));
+            subedgestwo = edges.submat(new Rect(new Point(100, 70), new Point(220, 160)));
+            subedgesthree = edges.submat(new Rect(new Point(220, 70), new Point(320, 160)));
 
-            //can definitely make this more efficient once I figure out the row and column counts
-            for (int i = 0; i < rows; i++) {
-                for (int j = 0; j < columns; j++) {
-                    if (Arrays.equals(edges.get(i, j), new double[]{255.0, 255.0, 255.0})) {
-                        sumy += i;
-                        sumx += j;
-                    }
-                }
-            }
+            avg1 = (int) Core.mean(subedgesone).val[0];
+            avg2 = (int) Core.mean(subedgestwo).val[0];
+            avg3 = (int) Core.mean(subedgesthree).val[0];
 
-            double avgx = sumx / rows;
-            double avgy = sumy / columns;
+            if (avg1 > 2)
+                position = "LEFT";
+            else if (avg2 > 2)
+                position = "MIDDLE";
+            else if (avg3 > 2)
+                position = "RIGHT";
 
-            int leftthresh = 0, rightthresh = 0; //figure these out when we see the camera feed
 
-            /*
-            if (temp < leftthresh)
-                position = 1;
-            else if (temp < rightthresh)
-                position = 2;
-            else
-                position = 3;
-*/
-            rectangle(edges, new Point(avgx, avgy), new Point(avgx + 20, avgy + 20), new Scalar(225, 0, 225), 1);
-
-            double[] d = edges.get(10,0);
-            double x = a.width;
-           double w =  a.height;
-
-            double width = 250;
-            double left_x = 0.25 * width;
-            double right_x = 0.75 * width;
-            boolean left = false; // true if regular stone found on the left side
-            boolean right = false; // "" "" on the right side
+            //rectangle(edges, new Point(0, 70), new Point(320, 160), new Scalar(225, 0, 225), 1);
+            //rectangle(edges, new Point(100, 0), new Point(220, 240), new Scalar(225, 0, 225), 1);
 
 
             /**
@@ -318,7 +276,7 @@ public class WebcamExample extends LinearOpMode
              * tapped, please see {@link PipelineStageSwitchingExample}
              */
 
-            return thresh;
+            return edges;
         }
 
 
@@ -349,5 +307,7 @@ public class WebcamExample extends LinearOpMode
                 webcam.resumeViewport();
             }
         }
+
+
     }
 }
