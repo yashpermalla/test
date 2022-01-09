@@ -20,7 +20,6 @@ package org.firstinspires.ftc.teamcode;/*
  */
 
 
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -47,7 +46,7 @@ import java.util.List;
 
 import static org.opencv.imgproc.Imgproc.rectangle;
 
-@Autonomous
+@TeleOp
 public class WebcamExample extends LinearOpMode
 {
     OpenCvWebcam webcam;
@@ -118,13 +117,18 @@ public class WebcamExample extends LinearOpMode
                  * For a rear facing camera or a webcam, rotation is defined assuming the camera is facing
                  * away from the user.
                  */
+                telemetry.addData("Camera opened", "");
+                telemetry.update();
                 webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                telemetry.addData("Stream started", "");
+                telemetry.update();
 
             }
 
             @Override
-            public void onError(int errorCode)
-            {
+            public void onError(int errorCode) {
+                telemetry.addData("Error", errorCode);
+                telemetry.update();
                 /*
                  * This will be called if the camera could not be opened
                  */
@@ -191,6 +195,7 @@ public class WebcamExample extends LinearOpMode
     class SamplePipeline extends OpenCvPipeline {
         boolean viewportPaused;
         private volatile String position = "";
+        private volatile double avg = 0;
         private volatile int avg1 = 0, avg2 = 0, avg3 = 0;
 
         /*
@@ -243,13 +248,12 @@ public class WebcamExample extends LinearOpMode
 
             //Detects Edges
             Imgproc.Canny(thresh, edges, 60, 60 * 2);
-//            List<MatOfPoint> contours = new ArrayList<>();
-//            Imgproc.findContours(edges, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 
             Size a = edges.size();
             double rows = a.height;
             double columns = a.width;
 
+            //Creating 3  rectangles to set boundaries of whether the cup in inside one of these rectangles.
             subedgesone = edges.submat(new Rect(new Point(0, 70), new Point(100, 160)));
             subedgestwo = edges.submat(new Rect(new Point(100, 70), new Point(220, 160)));
             subedgesthree = edges.submat(new Rect(new Point(220, 70), new Point(320, 160)));
@@ -264,10 +268,6 @@ public class WebcamExample extends LinearOpMode
                 position = "MIDDLE";
             else if (avg3 > 2)
                 position = "RIGHT";
-
-
-            //rectangle(edges, new Point(0, 70), new Point(320, 160), new Scalar(225, 0, 225), 1);
-            //rectangle(edges, new Point(100, 0), new Point(220, 240), new Scalar(225, 0, 225), 1);
 
 
             /**
